@@ -1,0 +1,4 @@
+version: '1'
+services:
+    vfs_server:
+        image: vfs_server
