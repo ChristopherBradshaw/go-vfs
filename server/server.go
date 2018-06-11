@@ -31,6 +31,7 @@ func main() {
 
   // Register endpoints
   http.HandleFunc("/getConfig", Handlers.GetConfigHandler)
+  http.HandleFunc("/getManifest", Handlers.GetManifestHandler)
 
   // Start server
   log.Printf("Starting server on port %v\n", Config.GlobalServerConfig.Port)
