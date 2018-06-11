@@ -1,4 +1,8 @@
-version: '1'
+version: '2'
 services:
-    vfs_server:
-        image: vfs_server
+  vfs_server:
+    image: go-vfs
+    command: config.txt
+  curl:
+    image: appropriate/curl
+    entrypoint: sh -c "sleep 3 && curl -XPOST -s vfs_server:8888/getConfig"

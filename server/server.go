@@ -13,6 +13,7 @@ func main() {
 
   if len(args) < 2 {
     log.Fatal("No server config provided")
+    return
   }
 
   // Read in server configuration

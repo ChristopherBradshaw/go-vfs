@@ -5,21 +5,14 @@ import "errors"
 import "fmt"
 import "strconv"
 
-
-/* Global variables */
 var GlobalServerConfig *ServerConfig
 
-
-/* Supported fields for server config */
 type ServerConfig struct {
   Port int `json:"port"`
   MaxNumFiles int `json:"max_num_files"`
   MaxFilesizeMB int `json:"max_filesize_mb"`
   MaxUserUploadsPerMinute int `json:"max_user_uploads_per_minute"`
 }
-
-
-/* Exported functions */
 
 // Parse the entire server config file. Return a struct
 // containing the data
@@ -56,9 +49,6 @@ func ParseServerConfig(fileContents string) (*ServerConfig,error) {
   return &conf,nil
 }
 
-
-/* Helper functions */
-
 // Look for one specific key inside of the server config. Return value or
 // an error if not found
 func readConfigProperty(fileContents string, key string) (string,error) {
@@ -68,17 +58,16 @@ func readConfigProperty(fileContents string, key string) (string,error) {
   // Loop through each line in the config file
   for _,line := range lines {
     line = strings.ToLower(line)
-
     // This line is a comment, skip it
-    if len(line) > 0 && []rune(strings.TrimSpace(line))[0] == '#' {
+    if len(strings.TrimSpace(line)) > 0 && []rune(strings.TrimSpace(line))[0] == '#' {
       continue
     }
 
     // This line has a key assignment
     if strings.Contains(line,"=") {
       components := strings.Split(line,"=")
-      lhs := components[0]
-      rhs := components[1]
+      lhs := strings.TrimSpace(components[0])
+      rhs := strings.TrimSpace(components[1])
       // Check if it's the key assignment we're interested in
       if lhs == key {
         return rhs,nil
