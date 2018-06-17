@@ -2,11 +2,9 @@
 Provides REST services for uploading/downloading files.
 
 # Setup
-## Build server binary
+## Build Docker image
 ```
 ./build.sh
-
-docker build -t go-vfs .
 ```
 
 # Run
