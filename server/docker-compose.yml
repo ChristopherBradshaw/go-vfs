@@ -3,6 +3,8 @@ services:
   vfs_server:
     image: go-vfs
     command: config.txt
+    ports:
+      - "8888:8888"
   curl:
     image: appropriate/curl
     entrypoint: sh -c "sleep 3 && echo \"SERVER HEALTH CHECK:\" && curl -XPOST -s vfs_server:8888/getConfig"
