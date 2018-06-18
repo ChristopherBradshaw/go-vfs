@@ -1,4 +1,5 @@
 package Handlers
+import Models "../../models"
 import "../fileSystem"
 import "net/http"
 import "encoding/json"
@@ -10,5 +11,6 @@ func GetManifestHandler(w http.ResponseWriter, r *http.Request) {
   }
 
   encoder := json.NewEncoder(w)
-  encoder.Encode(FileSystem.GetFileManifest())
+  response := Models.GetManifestResponse{FileSystem.GetFileManifest()}
+  encoder.Encode(response)
 }

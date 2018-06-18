@@ -1,22 +1,16 @@
 package Config
 
+import Models "../../models"
 import "strings"
 import "errors"
 import "fmt"
 import "strconv"
 
-var GlobalServerConfig *ServerConfig
-
-type ServerConfig struct {
-  Port int `json:"port"`
-  MaxNumFiles int `json:"max_num_files"`
-  MaxFilesizeMB int `json:"max_filesize_mb"`
-  MaxUserUploadsPerMinute int `json:"max_user_uploads_per_minute"`
-}
+var GlobalServerConfig *Models.ServerConfig
 
 // Parse the entire server config file. Return a struct
 // containing the data
-func ParseServerConfig(fileContents string) (*ServerConfig,error) {
+func ParseServerConfig(fileContents string) (*Models.ServerConfig,error) {
   // Parse each property, fail if any are missing
   port, err := readConfigProperty(fileContents,"port")
   if err != nil {
@@ -45,7 +39,7 @@ func ParseServerConfig(fileContents string) (*ServerConfig,error) {
   maxFilesizeMbN,_ := strconv.Atoi(maxFilesizeMb)
   maxUserUploadsPerMinuteN,_ := strconv.Atoi(maxUserUploadsPerMinute)
 
-  conf := ServerConfig{portN,maxNumFilesN,maxFilesizeMbN,maxUserUploadsPerMinuteN}
+  conf := Models.ServerConfig{portN,maxNumFilesN,maxFilesizeMbN,maxUserUploadsPerMinuteN}
   return &conf,nil
 }
 
