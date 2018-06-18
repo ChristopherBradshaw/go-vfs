@@ -1,6 +1,6 @@
 package Config
 
-import Models "../../models"
+import Models "../models"
 import "strings"
 import "errors"
 import "fmt"

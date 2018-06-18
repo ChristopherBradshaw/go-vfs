@@ -1,6 +1,6 @@
 package main
 
-import Models "../models"
+import Models "../shared/models"
 import "errors"
 import "encoding/json"
 import "bufio"
@@ -16,6 +16,7 @@ var owner string
 
 func init() {
   url = ""
+  owner = ""
 }
 
 func main() {

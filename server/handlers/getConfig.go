@@ -1,6 +1,6 @@
 package Handlers
 import Config "../config"
-import Models "../../models"
+import Models "../../shared/models"
 import "net/http"
 import "encoding/json"
 

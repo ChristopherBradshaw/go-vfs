@@ -1,5 +1,5 @@
 package Handlers
-import Models "../../models"
+import Models "../../shared/models"
 import "../fileSystem"
 import "net/http"
 import "encoding/json"
