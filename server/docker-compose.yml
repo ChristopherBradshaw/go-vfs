@@ -7,4 +7,4 @@ services:
       - "8888:8888"
   curl:
     image: appropriate/curl
-    entrypoint: sh -c "sleep 3 && echo \"SERVER HEALTH CHECK:\" && curl -XPOST -s vfs_server:8888/getConfig"
+    entrypoint: sh -c "sleep 3 && echo \"SERVER HEALTH CHECK:\" && curl -s vfs_server:8888/getConfig"

@@ -33,7 +33,11 @@ func GetFileManifest() ([]FileEntry) {
   return fileEntries
 }
 
-func AddFile(fileName string, owner string, contents []byte) error {
+func GetFileContentsMap() (map[int] []byte) {
+  return fileContentsMap
+}
+
+func AddFile(fileName string, owner string, contents []byte) (FileEntry, error) {
   fileID := nextFileIDToAssign; nextFileIDToAssign++
   curTime := time.Now()
 
@@ -41,7 +45,8 @@ func AddFile(fileName string, owner string, contents []byte) error {
   fileContentsMap[fileID] = make([]byte,len(contents))
   copy(fileContentsMap[fileID], contents)
 
+  newEntry := FileEntry{fileName,fileID,len(contents),owner,curTime,0}
   // Update manifest
-  fileEntries = append(fileEntries,FileEntry{fileName,fileID,len(contents),owner,curTime,0})
-  return nil
+  fileEntries = append(fileEntries,newEntry)
+  return newEntry, nil
 }

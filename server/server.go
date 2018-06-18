@@ -32,6 +32,7 @@ func main() {
   // Register endpoints
   http.HandleFunc("/getConfig", Handlers.GetConfigHandler)
   http.HandleFunc("/getManifest", Handlers.GetManifestHandler)
+  http.HandleFunc("/uploadFile", Handlers.UploadFileHandler)
 
   // Start server
   log.Printf("Starting server on port %v\n", Config.GlobalServerConfig.Port)
