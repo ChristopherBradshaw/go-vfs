@@ -6,11 +6,9 @@ import "errors"
 import "fmt"
 import "strconv"
 
-var GlobalServerConfig *Models.ServerConfig
-
 // Parse the entire server config file. Return a struct
 // containing the data
-func ParseServerConfig(fileContents string) (*Models.ServerConfig,error) {
+func ParseServerConfig(fileContents string) (*Models.ServerConfig, error) {
   // Parse each property, fail if any are missing
   port, err := readConfigProperty(fileContents,"port")
   if err != nil {
@@ -40,6 +38,29 @@ func ParseServerConfig(fileContents string) (*Models.ServerConfig,error) {
   maxUserUploadsPerMinuteN,_ := strconv.Atoi(maxUserUploadsPerMinute)
 
   conf := Models.ServerConfig{portN,maxNumFilesN,maxFilesizeMbN,maxUserUploadsPerMinuteN}
+  return &conf,nil
+}
+
+// Parse the entire client config file. Return a struct
+// containing the data
+func ParseClientConfig(fileContents string) (*Models.ClientConfig, error) {
+  // Parse each property, fail if any are missing
+  hostname, err := readConfigProperty(fileContents,"hostname")
+  if err != nil {
+    return nil, errors.New("Hostname not specified")
+  }
+
+  port, err := readConfigProperty(fileContents,"port")
+  if err != nil {
+    return nil,errors.New("Port not specified")
+  }
+
+  username, err := readConfigProperty(fileContents,"username")
+  if err != nil {
+    return nil, errors.New("Username not specified")
+  }
+
+  conf := Models.ClientConfig{hostname,port,username}
   return &conf,nil
 }
 

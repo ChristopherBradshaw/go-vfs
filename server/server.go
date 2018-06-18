@@ -6,7 +6,9 @@ import "os"
 import "io/ioutil"
 import "net/http"
 import Handlers "./handlers"
-import Config "./config"
+import Config "../shared/config"
+import FileSystem "./fileSystem"
+
 
 func main() {
   args := os.Args
@@ -27,7 +29,7 @@ func main() {
 
   // Parse server config
   fileContents, err := ioutil.ReadAll(file)
-  Config.GlobalServerConfig, _ = Config.ParseServerConfig(string(fileContents))
+  FileSystem.GlobalServerConfig, _ = Config.ParseServerConfig(string(fileContents))
 
   // Register endpoints
   http.HandleFunc("/getConfig", Handlers.GetConfigHandler)
@@ -35,6 +37,6 @@ func main() {
   http.HandleFunc("/uploadFile", Handlers.UploadFileHandler)
 
   // Start server
-  log.Printf("Starting server on port %v\n", Config.GlobalServerConfig.Port)
-  log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", Config.GlobalServerConfig.Port), nil))
+  log.Printf("Starting server on port %v\n", FileSystem.GlobalServerConfig.Port)
+  log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", FileSystem.GlobalServerConfig.Port), nil))
 }

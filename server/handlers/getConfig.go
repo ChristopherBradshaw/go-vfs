@@ -1,5 +1,5 @@
 package Handlers
-import Config "../config"
+import FileSystem "../fileSystem"
 import Models "../../shared/models"
 import "net/http"
 import "encoding/json"
@@ -11,7 +11,7 @@ func GetConfigHandler(w http.ResponseWriter, r *http.Request) {
   }
 
   encoder := json.NewEncoder(w)
-  response := Models.GetConfigResponse{*Config.GlobalServerConfig}
+  response := Models.GetConfigResponse{*FileSystem.GlobalServerConfig}
   encoder.Encode(response)
 }
 

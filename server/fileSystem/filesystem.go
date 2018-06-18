@@ -6,6 +6,9 @@ import Models "../../shared/models"
 // Note: This package doesn't deal with any of the server config properties.
 // This responsibility is left to the callers of these methods.
 
+// Server configuration
+var GlobalServerConfig *Models.ServerConfig
+
 // Hold information for each file in the vfs
 var fileEntries []Models.FileEntry
 

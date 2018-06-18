@@ -10,6 +10,12 @@ type GetManifestResponse struct {
   FileEntries []FileEntry `json:"files"`
 }
 
+type ClientConfig struct {
+  Hostname string
+  Port string
+  Username string
+}
+
 type ServerConfig struct {
   Port int `json:"port"`
   MaxNumFiles int `json:"max_num_files"`

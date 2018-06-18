@@ -1,5 +1,6 @@
 package main
 
+import Config "../shared/config"
 import Models "../shared/models"
 import "errors"
 import "encoding/json"
@@ -12,21 +13,57 @@ import "net/http"
 import "strings"
 
 var url string
-var owner string
+var username string
 
 func init() {
   url = ""
-  owner = ""
+  username = ""
 }
 
 func main() {
   fmt.Println("\n--------- Virtual Filesystem ---------")
   reader := bufio.NewReader(os.Stdin)
-  getServerInfo(reader)
+  // If they provided a config file, pull fields from there
+  args := os.Args
+  if len(args) == 2 {
+    parseServerInfo(args[1])
+  } else  {
+    // Otherwise ask them for the fields
+    getServerInfo(reader)
+  }
   testConnection()
+  fmt.Printf("Hello, %s. Connected to: %s\n",username,url)
   doPromptLoop(reader)
 }
 
+func saveConfig(config Models.ClientConfig) {
+  url = "http://" + config.Hostname + ":" + config.Port
+  username = config.Username
+}
+
+// Read server/username information from a file instead of prompting the user
+func parseServerInfo(fileName string) {
+  file, err := os.Open(fileName)
+  if err != nil {
+    fmt.Println("Failed to open specified config file")
+    os.Exit(1)
+  }
+
+  defer file.Close()
+
+  // Parse the file input into the fields we need
+  fileContents, err := ioutil.ReadAll(file)
+  conf, err := Config.ParseClientConfig(string(fileContents))
+  if err != nil {
+    fmt.Println("Failed to parse specified config file")
+    os.Exit(1)
+  }
+
+  saveConfig(*conf)
+}
+
+// Ask the user for the specified fields
+// (call if they don't provide a config file)
 func getServerInfo(reader *bufio.Reader) {
   fmt.Print("Hostname: ")
   host, _ := reader.ReadString('\n')
@@ -40,8 +77,13 @@ func getServerInfo(reader *bufio.Reader) {
   name, _ := reader.ReadString('\n')
   name = strings.TrimSpace(name)
 
-  url = "http://" + host + ":" + port
-  owner = name
+  if len(name) == 0 {
+    fmt.Println("Username can't be empty")
+    os.Exit(1)
+  }
+
+  conf := Models.ClientConfig{host,port,name}
+  saveConfig(conf)
 }
 
 // Make sure we can reach the server they provided
@@ -60,6 +102,7 @@ func testConnection() {
   }
 }
 
+// Main prompt loop
 func doPromptLoop(reader *bufio.Reader) {
   for ;; {
     fmt.Println("\n----- What would you like to do? -----")
@@ -105,6 +148,7 @@ func doPromptLoop(reader *bufio.Reader) {
   }
 }
 
+// Retrieve the manifest data from the server
 func getManifest() (*Models.GetManifestResponse, error) {
   resp, err := http.Get(url + "/getManifest")
   if err != nil {
@@ -154,6 +198,7 @@ func removeFile() {
 
 }
 
+// Retrieve the server config data from the server
 func getConfig() (*Models.GetConfigResponse, error) {
   resp, err := http.Get(url + "/getConfig")
   if err != nil {
@@ -174,8 +219,10 @@ func getConfig() (*Models.GetConfigResponse, error) {
   return &decodedResponse, nil
 }
 
+// Request and display the server config data
 func printConfig() {
-  fmt.Println("\n----- Server settings -----")
+  fmt.Println("\n----- Server information -----")
+  fmt.Printf("Connected to: %s as %s\n\n",url,username)
   config, err := getConfig()
 
   // Could not get manifest
