@@ -15,11 +15,10 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
   }
 
   // Read request body
-  var request Models.UploadFileRequest
-  request = Models.UploadFileRequest{r.FormValue("owner")}
+  owner := r.FormValue("owner")
 
   // They didn't include the owner
-  if request.Owner == "" {
+  if owner == "" {
     http.Error(w, "Missing file owner field", http.StatusBadRequest)
     return
   }
@@ -60,7 +59,7 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 
   // Read in the file to our filesystem
   io.Copy(&buffer, file)
-  FileSystem.AddFile(filename, strings.ToLower(request.Owner), buffer.Bytes())
+  FileSystem.AddFile(filename, strings.ToLower(owner), buffer.Bytes())
 
   encoder := json.NewEncoder(w)
   encoder.Encode(Models.UploadFileResponse{filename})

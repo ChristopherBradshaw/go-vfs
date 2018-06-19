@@ -18,6 +18,10 @@ type UploadFileResponse struct {
   Filename string
 }
 
+type DownloadFileRequest struct {
+  FileID int
+}
+
 type ClientConfig struct {
   Hostname string
   Port string

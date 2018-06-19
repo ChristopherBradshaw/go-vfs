@@ -240,18 +240,23 @@ func uploadFile(reader *bufio.Reader) {
 			err = fmt.Errorf("Bad status: %s", res.Status)
 	}
 
+  // Decode response
   defer res.Body.Close()
   var decodedResponse Models.UploadFileResponse
   decoder := json.NewDecoder(res.Body)
   err = decoder.Decode(&decodedResponse)
-  if decodedResponse.Filename != file.Name() {
-    fmt.Printf("File was renamed: %s->%s\n",file.Name(),decodedResponse.Filename)
-  }
-  fmt.Println("Successfully uploaded " + decodedResponse.Filename)
   if err != nil {
     fmt.Printf("%s", err)
     return
   }
+
+  // If the server saved the file with a different file name than the
+  // one we provided, let the user know
+  if decodedResponse.Filename != file.Name() {
+    fmt.Printf("File was renamed: %s->%s\n",file.Name(),decodedResponse.Filename)
+  }
+
+  fmt.Println("Successfully uploaded " + decodedResponse.Filename)
 }
 
 func downloadFile() {
