@@ -1,19 +1,12 @@
 package Handlers
 import FileSystem "../fileSystem"
+import Models "../../shared/models"
 import "net/http"
 import "bytes"
 import "strings"
 import "fmt"
 import "io"
 import "encoding/json"
-
-type UploadRequest struct {
-  Owner string `json:"owner"`
-}
-
-type UploadResponse struct {
-  Filename string `json:"file_name"`
-}
 
 // POST request for uploading files to the server
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
@@ -22,8 +15,8 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
   }
 
   // Read request body
-  var request UploadRequest
-  request = UploadRequest{r.FormValue("owner")}
+  var request Models.UploadFileRequest
+  request = Models.UploadFileRequest{r.FormValue("owner")}
 
   // They didn't include the owner
   if request.Owner == "" {
@@ -67,10 +60,10 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 
   // Read in the file to our filesystem
   io.Copy(&buffer, file)
-  FileSystem.AddFile(filename, request.Owner, buffer.Bytes())
+  FileSystem.AddFile(filename, strings.ToLower(request.Owner), buffer.Bytes())
 
   encoder := json.NewEncoder(w)
-  encoder.Encode(UploadResponse{filename})
+  encoder.Encode(Models.UploadFileResponse{filename})
 }
 
 // Check the given filename against all existing names in the manifest

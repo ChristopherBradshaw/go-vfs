@@ -11,6 +11,9 @@ import "strconv"
 import "io/ioutil"
 import "net/http"
 import "strings"
+import "io"
+import "mime/multipart"
+import "bytes"
 
 var url string
 var username string
@@ -127,7 +130,7 @@ func doPromptLoop(reader *bufio.Reader) {
         printManifest()
         break
       case 2:
-        uploadFile()
+        uploadFile(reader)
         break
       case 3:
         downloadFile()
@@ -186,8 +189,69 @@ func printManifest() {
   }
 }
 
-func uploadFile() {
+func mustOpen(f string) *os.File {
+    r, err := os.Open(f)
+    if err != nil {
+        panic(err)
+    }
+    return r
+}
 
+func uploadFile(reader *bufio.Reader) {
+  fmt.Println("\n----- Upload File -----")
+  fmt.Print("Enter file path: ")
+  filePath, _ := reader.ReadString('\n')
+  filePath = strings.TrimSpace(filePath)
+
+  httpClient := http.Client{}
+
+	// Prepare a form
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+
+  // Add file to upload to the form
+	file := mustOpen(filePath)
+	defer file.Close()
+	formWriter, _ := w.CreateFormFile("file",file.Name())
+  io.Copy(formWriter, file)
+
+  // Add owner/username to the form
+  formWriter, _ = w.CreateFormField("owner")
+  io.Copy(formWriter, strings.NewReader(username))
+
+	w.Close()
+
+	// Now that we have a form, submit it to the handler.
+	req, err := http.NewRequest("POST", url+"/uploadFile", &b)
+	if err != nil {
+			return
+	}
+
+	req.Header.Set("Content-Type", w.FormDataContentType())
+
+	// Submit the request
+	res, err := httpClient.Do(req)
+	if err != nil {
+			return
+	}
+
+	// Check the response
+	if res.StatusCode != http.StatusOK {
+			err = fmt.Errorf("Bad status: %s", res.Status)
+	}
+
+  defer res.Body.Close()
+  var decodedResponse Models.UploadFileResponse
+  decoder := json.NewDecoder(res.Body)
+  err = decoder.Decode(&decodedResponse)
+  if decodedResponse.Filename != file.Name() {
+    fmt.Printf("File was renamed: %s->%s\n",file.Name(),decodedResponse.Filename)
+  }
+  fmt.Println("Successfully uploaded " + decodedResponse.Filename)
+  if err != nil {
+    fmt.Printf("%s", err)
+    return
+  }
 }
 
 func downloadFile() {

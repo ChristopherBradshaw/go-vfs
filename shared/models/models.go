@@ -3,11 +3,19 @@ import "time"
 import "fmt"
 
 type GetConfigResponse struct {
-  ServerConfig ServerConfig `json:"server_config"`
+  ServerConfig ServerConfig
 }
 
 type GetManifestResponse struct {
-  FileEntries []FileEntry `json:"files"`
+  FileEntries []FileEntry
+}
+
+type UploadFileRequest struct {
+  Owner string
+}
+
+type UploadFileResponse struct {
+  Filename string
 }
 
 type ClientConfig struct {
@@ -17,10 +25,10 @@ type ClientConfig struct {
 }
 
 type ServerConfig struct {
-  Port int `json:"port"`
-  MaxNumFiles int `json:"max_num_files"`
-  MaxFilesizeMB int `json:"max_filesize_mb"`
-  MaxUserUploadsPerMinute int `json:"max_user_uploads_per_minute"`
+  Port int
+  MaxNumFiles int
+  MaxFilesizeMB int
+  MaxUserUploadsPerMinute int
 }
 
 func (config ServerConfig) String() string {
@@ -30,12 +38,12 @@ func (config ServerConfig) String() string {
 }
 
 type FileEntry struct {
-  FileName string `json:"file_name"`
-  FileID int `json:"file_id"`
-  FileSize int `json:"file_size"`
-  Owner string `json:"owner"`
-  LastModified time.Time `json:"last_modified"`
-  NumDownloads int `json:"num_downloads"`
+  FileName string
+  FileID int
+  FileSize int
+  Owner string
+  LastModified time.Time
+  NumDownloads int
 }
 
 func (entry FileEntry) String() string {
