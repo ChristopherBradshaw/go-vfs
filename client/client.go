@@ -133,7 +133,7 @@ func doPromptLoop(reader *bufio.Reader) {
         uploadFile(reader)
         break
       case 3:
-        downloadFile()
+        downloadFile(reader)
         break
       case 4:
         removeFile()
@@ -259,8 +259,22 @@ func uploadFile(reader *bufio.Reader) {
   fmt.Println("Successfully uploaded " + decodedResponse.Filename)
 }
 
-func downloadFile() {
+func downloadFile(reader *bufio.Reader) {
+  fmt.Println("\n----- Download File -----")
+  fmt.Print("Enter file ID: ")
+  fileID, _ := reader.ReadString('\n')
+  fileID = strings.TrimSpace(fileID)
 
+  resp, err := http.Get(url + "/getFile/" + fileID)
+  if err != nil {
+    fmt.Printf("%s", err)
+    return
+  }
+  defer resp.Body.Close()
+
+  contents, err := ioutil.ReadAll(resp.Body)
+  fmt.Println(string(contents))
+  // TODO actually save the file
 }
 
 func removeFile() {
