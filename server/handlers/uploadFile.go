@@ -58,6 +58,8 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
   }
 
   // Read in the file to our filesystem
+  // TODO: We're copying the entire file twice (once here and once in AddFile)
+  //       find a better way to do this
   io.Copy(&buffer, file)
   FileSystem.AddFile(filename, strings.ToLower(owner), buffer.Bytes())
 
