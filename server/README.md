@@ -1,13 +1,14 @@
 # go-vfs server
 Provides REST services for uploading/downloading files.
 
-# Setup
-## Build Docker image
+# Running the server
+
+First make sure the newest docker image is built:
 ```
 ./build.sh
 ```
 
-# Run
+Start the server
 ```
 docker-compose up
 ```
