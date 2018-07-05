@@ -48,7 +48,7 @@ func saveConfig(config Models.ClientConfig) {
 func parseServerInfo(fileName string) {
   file, err := os.Open(fileName)
   if err != nil {
-    fmt.Println("Failed to open specified config file")
+    fmt.Errorf("%s\n",err)
     os.Exit(1)
   }
 
@@ -58,7 +58,7 @@ func parseServerInfo(fileName string) {
   fileContents, err := ioutil.ReadAll(file)
   conf, err := Config.ParseClientConfig(string(fileContents))
   if err != nil {
-    fmt.Println("Failed to parse specified config file")
+    fmt.Errorf("%s\n",err)
     os.Exit(1)
   }
 
@@ -93,13 +93,13 @@ func getServerInfo(reader *bufio.Reader) {
 func testConnection() {
   resp, err := http.Get(url)
   if err != nil {
-    fmt.Printf("%s", err)
+    fmt.Errorf("%s\n",err)
     os.Exit(1)
   } else {
     defer resp.Body.Close()
     _, err := ioutil.ReadAll(resp.Body)
     if err != nil {
-      fmt.Printf("%s",err)
+      fmt.Errorf("%s\n",err)
       os.Exit(1)
     }
   }
@@ -155,7 +155,6 @@ func doPromptLoop(reader *bufio.Reader) {
 func getManifest() (*Models.GetManifestResponse, error) {
   resp, err := http.Get(url + "/getManifest")
   if err != nil {
-    fmt.Printf("%s", err)
     return nil, errors.New("Could not retrieve manifest")
   }
   defer resp.Body.Close()
@@ -165,7 +164,6 @@ func getManifest() (*Models.GetManifestResponse, error) {
   decoder := json.NewDecoder(resp.Body)
   err = decoder.Decode(&decodedResponse)
   if err != nil {
-    fmt.Printf("%s",err)
     return nil, errors.New("Could not decode manifest response")
   }
 
@@ -246,7 +244,7 @@ func uploadFile(reader *bufio.Reader) {
   decoder := json.NewDecoder(res.Body)
   err = decoder.Decode(&decodedResponse)
   if err != nil {
-    fmt.Printf("%s", err)
+    fmt.Errorf("%s", err)
     return
   }
 
@@ -259,6 +257,21 @@ func uploadFile(reader *bufio.Reader) {
   fmt.Println("Successfully uploaded " + decodedResponse.Filename)
 }
 
+func getFilenameForID(fileID int) (string, error) {
+  manifest, err := getManifest()
+  if err != nil {
+    panic(err)
+  }
+
+  for _, elm := range manifest.FileEntries {
+    if elm.FileID == fileID {
+      return elm.FileName, nil
+    }
+  }
+
+  return "", errors.New("file ID not found in manifest")
+}
+
 func downloadFile(reader *bufio.Reader) {
   fmt.Println("\n----- Download File -----")
   fmt.Print("Enter file ID: ")
@@ -267,14 +280,33 @@ func downloadFile(reader *bufio.Reader) {
 
   resp, err := http.Get(url + "/getFile/" + fileID)
   if err != nil {
-    fmt.Printf("%s", err)
+    fmt.Errorf("%s\n",err)
     return
   }
   defer resp.Body.Close()
 
-  contents, err := ioutil.ReadAll(resp.Body)
-  fmt.Println(string(contents))
-  // TODO actually save the file
+  fileIDN, err := strconv.Atoi(fileID)
+  if err != nil {
+    fmt.Errorf("%s\n",err)
+    return
+  }
+
+  fileName, err := getFilenameForID(fileIDN)
+  if err != nil {
+    fmt.Errorf("%s\n",err)
+    return
+  }
+
+  outFile, err := os.Create(fileName)
+  if err != nil {
+    fmt.Errorf("%s\n",err)
+    return
+  }
+
+  defer outFile.Close()
+
+  nBytes, err := io.Copy(outFile, resp.Body)
+  fmt.Printf("Copied %d bytes into %s\n", nBytes, fileName)
 }
 
 func removeFile() {
@@ -285,7 +317,7 @@ func removeFile() {
 func getConfig() (*Models.GetConfigResponse, error) {
   resp, err := http.Get(url + "/getConfig")
   if err != nil {
-    fmt.Printf("%s", err)
+    fmt.Errorf("%s\n",err)
     return nil, errors.New("Could not retrieve config")
   }
   defer resp.Body.Close()
@@ -295,7 +327,7 @@ func getConfig() (*Models.GetConfigResponse, error) {
   decoder := json.NewDecoder(resp.Body)
   err = decoder.Decode(&decodedResponse)
   if err != nil {
-    fmt.Printf("%s",err)
+    fmt.Errorf("%s\n",err)
     return nil, errors.New("Could not decode manifest response")
   }
 
@@ -310,7 +342,7 @@ func printConfig() {
 
   // Could not get manifest
   if err != nil {
-    fmt.Println(err)
+    fmt.Errorf("%s\n",err)
     return
   }
 
