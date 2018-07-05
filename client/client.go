@@ -14,6 +14,7 @@ import "strings"
 import "io"
 import "mime/multipart"
 import "bytes"
+import "os/exec"
 
 var url string
 var username string
@@ -48,7 +49,7 @@ func saveConfig(config Models.ClientConfig) {
 func parseServerInfo(fileName string) {
   file, err := os.Open(fileName)
   if err != nil {
-    fmt.Errorf("%s\n",err)
+    fmt.Printf("%s\n",err)
     os.Exit(1)
   }
 
@@ -58,7 +59,7 @@ func parseServerInfo(fileName string) {
   fileContents, err := ioutil.ReadAll(file)
   conf, err := Config.ParseClientConfig(string(fileContents))
   if err != nil {
-    fmt.Errorf("%s\n",err)
+    fmt.Printf("%s\n",err)
     os.Exit(1)
   }
 
@@ -93,13 +94,13 @@ func getServerInfo(reader *bufio.Reader) {
 func testConnection() {
   resp, err := http.Get(url)
   if err != nil {
-    fmt.Errorf("%s\n",err)
+    fmt.Printf("%s\n",err)
     os.Exit(1)
   } else {
     defer resp.Body.Close()
     _, err := ioutil.ReadAll(resp.Body)
     if err != nil {
-      fmt.Errorf("%s\n",err)
+      fmt.Printf("%s\n",err)
       os.Exit(1)
     }
   }
@@ -120,8 +121,13 @@ func doPromptLoop(reader *bufio.Reader) {
     selectionStr, _ := reader.ReadString('\n')
     selectionInt , err := strconv.Atoi(strings.TrimSpace(selectionStr))
 
+    // Clear the screen
+		c := exec.Command("clear")
+		c.Stdout = os.Stdout
+		c.Run()
+
     if err != nil {
-      fmt.Errorf("%s\n",err)
+      fmt.Printf("%s\n",err)
       continue
     }
 
@@ -187,14 +193,7 @@ func printManifest() {
   }
 }
 
-func mustOpen(f string) *os.File {
-    r, err := os.Open(f)
-    if err != nil {
-        panic(err)
-    }
-    return r
-}
-
+// Ask for a file from the user and upload it to the server
 func uploadFile(reader *bufio.Reader) {
   fmt.Println("\n----- Upload File -----")
   fmt.Print("Enter file path: ")
@@ -208,7 +207,12 @@ func uploadFile(reader *bufio.Reader) {
 	w := multipart.NewWriter(&b)
 
   // Add file to upload to the form
-	file := mustOpen(filePath)
+  file, err := os.Open(filePath)
+  if err != nil {
+    fmt.Printf("Failed to open %s\n", filePath)
+    return
+  }
+
 	defer file.Close()
 	formWriter, _ := w.CreateFormFile("file",file.Name())
   io.Copy(formWriter, file)
@@ -235,7 +239,7 @@ func uploadFile(reader *bufio.Reader) {
 
 	// Check the response
 	if res.StatusCode != http.StatusOK {
-			err = fmt.Errorf("Bad status: %s", res.Status)
+			fmt.Printf("Bad status: %s", res.Status)
 	}
 
   // Decode response
@@ -244,7 +248,7 @@ func uploadFile(reader *bufio.Reader) {
   decoder := json.NewDecoder(res.Body)
   err = decoder.Decode(&decodedResponse)
   if err != nil {
-    fmt.Errorf("%s", err)
+    fmt.Printf("%s", err)
     return
   }
 
@@ -257,6 +261,7 @@ func uploadFile(reader *bufio.Reader) {
   fmt.Println("Successfully uploaded " + decodedResponse.Filename)
 }
 
+// fileID (int) -> fileName (string) by looking at the server manifest
 func getFilenameForID(fileID int) (string, error) {
   manifest, err := getManifest()
   if err != nil {
@@ -272,6 +277,7 @@ func getFilenameForID(fileID int) (string, error) {
   return "", errors.New("file ID not found in manifest")
 }
 
+// Prompt user for a file ID and download it from the server
 func downloadFile(reader *bufio.Reader) {
   fmt.Println("\n----- Download File -----")
   fmt.Print("Enter file ID: ")
@@ -280,26 +286,26 @@ func downloadFile(reader *bufio.Reader) {
 
   resp, err := http.Get(url + "/getFile/" + fileID)
   if err != nil {
-    fmt.Errorf("%s\n",err)
+    fmt.Printf("%s\n",err)
     return
   }
   defer resp.Body.Close()
 
   fileIDN, err := strconv.Atoi(fileID)
   if err != nil {
-    fmt.Errorf("%s\n",err)
+    fmt.Printf("%s\n",err)
     return
   }
 
   fileName, err := getFilenameForID(fileIDN)
   if err != nil {
-    fmt.Errorf("%s\n",err)
+    fmt.Printf("%s\n",err)
     return
   }
 
   outFile, err := os.Create(fileName)
   if err != nil {
-    fmt.Errorf("%s\n",err)
+    fmt.Printf("%s\n",err)
     return
   }
 
@@ -309,6 +315,7 @@ func downloadFile(reader *bufio.Reader) {
   fmt.Printf("Copied %d bytes into %s\n", nBytes, fileName)
 }
 
+// Prompt user for af ile ID and remove it from the server (if they are allowed to)
 func removeFile() {
 
 }
@@ -317,7 +324,7 @@ func removeFile() {
 func getConfig() (*Models.GetConfigResponse, error) {
   resp, err := http.Get(url + "/getConfig")
   if err != nil {
-    fmt.Errorf("%s\n",err)
+    fmt.Printf("%s\n",err)
     return nil, errors.New("Could not retrieve config")
   }
   defer resp.Body.Close()
@@ -327,7 +334,7 @@ func getConfig() (*Models.GetConfigResponse, error) {
   decoder := json.NewDecoder(resp.Body)
   err = decoder.Decode(&decodedResponse)
   if err != nil {
-    fmt.Errorf("%s\n",err)
+    fmt.Printf("%s\n",err)
     return nil, errors.New("Could not decode manifest response")
   }
 
@@ -342,7 +349,7 @@ func printConfig() {
 
   // Could not get manifest
   if err != nil {
-    fmt.Errorf("%s\n",err)
+    fmt.Printf("%s\n",err)
     return
   }
 
