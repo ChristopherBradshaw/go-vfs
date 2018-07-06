@@ -142,7 +142,7 @@ func doPromptLoop(reader *bufio.Reader) {
         downloadFile(reader)
         break
       case 4:
-        removeFile()
+        removeFile(reader)
         break
       case 5:
         printConfig()
@@ -316,8 +316,35 @@ func downloadFile(reader *bufio.Reader) {
 }
 
 // Prompt user for af ile ID and remove it from the server (if they are allowed to)
-func removeFile() {
+func removeFile(reader *bufio.Reader) {
+  fmt.Println("\n----- Remove File -----")
+  fmt.Print("Enter file ID: ")
+  fileID, _ := reader.ReadString('\n')
+  fileID = strings.TrimSpace(fileID)
 
+  var reqBody bytes.Buffer
+  json.NewEncoder(&reqBody).Encode(Models.RemoveFileRequest{Username: username})
+  req, err := http.NewRequest("delete", url + "/removeFile/" + fileID, &reqBody)
+  if err != nil {
+    fmt.Printf("%s\n",err)
+    return
+  }
+  defer req.Body.Close()
+
+  httpClient := http.Client{}
+
+	res, err := httpClient.Do(req)
+	if err != nil {
+		return
+	}
+
+	// Check the response
+  if res.StatusCode != http.StatusOK {
+    contents, _ := ioutil.ReadAll(res.Body)
+    fmt.Printf("Error: %s\n", contents)
+  } else {
+    fmt.Printf("File removed\n")
+  }
 }
 
 // Retrieve the server config data from the server
