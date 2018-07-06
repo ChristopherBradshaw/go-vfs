@@ -64,11 +64,15 @@ func RemoveFileHandler(w http.ResponseWriter, r *http.Request) {
   }
 
   // Remove it from the file system
-  err = FileSystem.RemoveFile(manifestIdx, fileIDInt)
+  fileEntry, err := FileSystem.RemoveFile(manifestIdx, fileIDInt)
   if err != nil {
     http.Error(w, "Failed to remove file", http.StatusInternalServerError)
     return
   }
+
+
+  encoder := json.NewEncoder(w)
+  encoder.Encode(Models.RemoveFileResponse{FileInfo: fileEntry})
 }
 
 func getFileIDIndex(fileID int) (int,error) {

@@ -343,7 +343,10 @@ func removeFile(reader *bufio.Reader) {
     contents, _ := ioutil.ReadAll(res.Body)
     fmt.Printf("Error: %s\n", contents)
   } else {
-    fmt.Printf("File removed\n")
+    var responseStruct Models.RemoveFileResponse
+    decoder := json.NewDecoder(res.Body)
+    decoder.Decode(&responseStruct)
+    fmt.Printf("File removed: %s\n", responseStruct.FileInfo.FileName)
   }
 }
 

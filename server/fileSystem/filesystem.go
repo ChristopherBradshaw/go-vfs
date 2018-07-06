@@ -52,23 +52,24 @@ func AddFile(fileName string, owner string, contents []byte) (Models.FileEntry, 
 // manifestIdx is the position of the entry within fileEntires
 // fileID is the unique ID assigned to the file (used as the key in fileContentsMap
 // and is a filed in the FileEntry structure)
-func RemoveFile(manifestIdx int, fileID int) error {
+func RemoveFile(manifestIdx int, fileID int) (Models.FileEntry, error) {
   // Sanity checks: Make sure manifestIdx in bounds and that it and 
   // fileID correspond to the same file
   if manifestIdx < 0 || manifestIdx >= len(fileEntries) {
-    return errors.New("Manifest index out of bounds")
+    return Models.FileEntry{}, errors.New("Manifest index out of bounds")
   }
 
   if fileEntries[manifestIdx].FileID != fileID {
-    return errors.New("Mismatched file IDs")
+    return Models.FileEntry{}, errors.New("Mismatched file IDs")
   }
 
   // Remove the file from the manifest
   // Replace the entry to delete with the last entry (order doesn't matter)
+  oldFileEntry := fileEntries[manifestIdx]
   fileEntries[manifestIdx] = fileEntries[len(fileEntries)-1]
   fileEntries = fileEntries[:len(fileEntries)-1]
 
   // Remove file contents mapping (the actual "file")
   delete(fileContentsMap, fileID)
-  return nil
+  return oldFileEntry, nil
 }

@@ -26,6 +26,10 @@ type RemoveFileRequest struct {
   Username string
 }
 
+type RemoveFileResponse struct {
+  FileInfo FileEntry
+}
+
 type ClientConfig struct {
   Hostname string
   Port string
