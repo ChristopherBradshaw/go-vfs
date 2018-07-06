@@ -22,6 +22,10 @@ type DownloadFileRequest struct {
   FileID int
 }
 
+type RemoveFileRequest struct {
+  Username string
+}
+
 type ClientConfig struct {
   Hostname string
   Port string

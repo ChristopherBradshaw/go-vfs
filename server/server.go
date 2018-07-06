@@ -36,6 +36,7 @@ func main() {
   http.HandleFunc("/getManifest", Handlers.GetManifestHandler)
   http.HandleFunc("/uploadFile", Handlers.UploadFileHandler)
   http.HandleFunc("/getFile/", Handlers.GetFileHandler)
+  http.HandleFunc("/removeFile/", Handlers.RemoveFileHandler)
 
   // Start server
   log.Printf("Starting server on port %v\n", FileSystem.GlobalServerConfig.Port)
